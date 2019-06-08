@@ -1,0 +1,7 @@
+var json_DetroitDam2 = {
+"type": "FeatureCollection",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "GRAND_ID": "80", "RES_NAME": "Detroit Lake", "DAM_NAME": "Detroit", "ALT_NAME": null, "RIVER": "North Santiam River", "ALT_RIVER": null, "MAIN_BASIN": null, "SUB_BASIN": null, "NEAR_CITY": null, "ALT_CITY": null, "ADMIN_UNIT": "Oregon", "SEC_ADMIN": null, "COUNTRY": "United States", "SEC_CNTRY": null, "YEAR": "1953", "ALT_YEAR": "-99", "DAM_HGT_M": "141", "ALT_HGT_M": "-99", "DAM_LEN_M": "482", "ALT_LEN_M": "-99", "AREA_SKM": 8.5, "AREA_POLY": 8.5, "AREA_REP": 14.1, "AREA_MAX": -99.0, "AREA_MIN": -99.0, "CAP_MCM": 561.2, "CAP_MAX": 561.2, "CAP_REP": 191.2, "CAP_MIN": -99.0, "DEPTH_M": 66.0, "DIS_AVG_LS": "35636", "DOR_PC": 49.9, "ELEV_MASL": "462", "CATCH_SKM": "1129", "CATCH_REP": "1134", "DATA_INFO": null, "USE_IRRI": "Sec", "USE_ELEC": "Main", "USE_SUPP": null, "USE_FCON": "Sec", "USE_RECR": "Sec", "USE_NAVI": null, "USE_FISH": null, "USE_PCON": null, "USE_LIVE": null, "USE_OTHR": "Sec", "MAIN_USE": "Hydroelectricity", "LAKE_CTRL": null, "MULTI_DAMS": null, "TIMELINE": null, "COMMENTS": null, "URL": "https:\/\/www.nwp.usace.army.mil\/op\/V\/parks.htm#Pdet", "QUALITY": "2: Good", "EDITOR": "UNH", "LONG_DD": -122.249583, "LAT_DD": 44.720417 }, "geometry": { "type": "Point", "coordinates": [ -122.249583333335636, 44.720416666661286 ] } }
+]
+}

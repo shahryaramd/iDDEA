@@ -1,0 +1,193 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Detroit Dam</title>
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<style type="text/css">
+		$ {
+			demo.css
+		}
+	</style>
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/modules/data.js"></script>
+	<script src="https://code.highcharts.com/modules/exporting.js"></script>
+	<script>
+		function getParamValue(paramName) {
+			var url = window.location.search.substring(1); //get rid of "?" in querystring
+			var qArray = url.split('&'); //get key-value pairs
+			for (var i = 0; i < qArray.length; i++) {
+				var pArr = qArray[i].split('='); //split key and value
+				if (pArr[0] == paramName)
+					return pArr[1]; //return value
+			}
+		}
+	</script>
+	<script type="text/javascript">
+		var reqDate = getParamValue("date");
+		// fn = 'http://128.95.45.89/testdss/optim_data/elev_optim_'+reqDate+'.txt'
+		fn = '../data/optim_data/elev_optim_' + reqDate + '.txt'
+		fnANN = '../data/ann_data/elev_optim_' + reqDate + '.txt'
+		function parseCSV(csvFile) {
+			// empty array for storing the chart data
+			var data = [];
+			// Split the lines
+			var lines = csvFile.split('\n');
+			// Iterate over the lines and add categories or series
+			$.each(lines, function(lineNo, line) {
+				if (lineNo != 0) {
+					var items = line.split(',');
+					// Insert date and player count into the series
+					data.push([Date.parse(items[0]), parseFloat(items[1])]);
+				}
+			});
+			return data
+		}
+		$.get(fn, function(csv) {
+			$.get(fnANN, function(csv2) {
+				var series1 = parseCSV(csv)
+		        var series2 = parseCSV(csv2)
+				$('#container').highcharts({
+					series: [{
+							name: 'VIC-based',
+			                data: series1
+			            }, {
+			            	name: 'ANN-based',
+			            	color: 'green',
+        					// dashStyle: 'ShortDash',
+			                data: series2
+			      	}],
+					// data: {
+					// 	csv: csv
+					// },
+					chart: {
+						type: 'spline',
+						zoomType: 'x'
+					},
+					title: {
+						text: 'Optimized Elevation',
+						style: {
+							fontWeight: 'bold'
+						}
+					},
+					xAxis: {
+						type: 'datetime',
+						labels: {
+							style: {
+								fontSize: '12px'
+							}
+						},
+						dateTimeLabelFormats: {
+							second: '%Y-%m-%d<br/>%H:%M:%S',
+							minute: '%Y-%m-%d<br/>%H:%M',
+							hour: '%Y-%m-%d<br/>%H:%M',
+							day: '%Y<br/>%m-%d',
+							week: '%Y<br/>%m-%d',
+							month: '%Y-%m',
+							year: '%Y'
+						}
+					},
+					yAxis: {
+						labels: {
+							formatter: function() {
+								return Highcharts.numberFormat(this.value, 0);
+							},
+							style: {
+								fontSize: '12px'
+							}
+						},
+						title: {
+							text: 'Elevation(ft)',
+							style: {
+								// fontWeight: 'bold',
+								fontSize: '15px'
+							}
+						}
+					}
+				});
+			});
+		});
+	</script>
+</head>
+
+<body style="overflow:hidden;">
+	<!-- <div align = "left"><a href="../data/det_elev.txt" target="_blank" style="color: #1E88E5;">Download Streamflow Data</a></div> -->
+	<div id="message" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 15px;
+    color: red; margin:5 auto;display:'none';">Sorry, data unavailable</div>
+	<div id="messageproc" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 15px; color: #14ca57; margin:5 auto;display:'none';">Forecast Model is running... </div>
+	<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+	<script type="text/javascript">
+		var reqDate = getParamValue("date");
+		// fn = 'http://128.95.45.89/testdss/optim_data/elev_optim_'+reqDate+'.txt'
+		fn = '../data/optim_data/elev_optim_' + reqDate + '.txt'
+
+
+		// get current date
+		var date = new Date();
+		date.setDate(date.getDate());
+		var yyyy = date.getFullYear().toString();
+		var mm = (date.getMonth() + 1).toString(); // getMonth() is zero-based
+		var dd = date.getDate().toString();
+		var curDate = yyyy + (mm[1] ? mm : "0" + mm[0]) + (dd[1] ? dd : "0" + dd[0]);
+
+
+		// Set the date we're counting down to
+		datefinish = date.setHours(10,0,0,0); //model finishes at 9:30am every day
+		var countDownDate = datefinish; //new Date("Dec 4, 2017 9:30:00").getTime();
+
+		// Update the count down every 1 second
+		var x = setInterval(function() {
+
+		    // Get todays date and time
+		    var now = new Date().getTime();
+
+		    // Find the distance between now an the count down date
+		    var distance = countDownDate - now;
+
+		    // Time calculations for days, hours, minutes and seconds
+		    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+		    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+		    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+		    // Output the result in an element with id="demo"
+		    document.getElementById("messageproc").innerHTML = "Forecast Model is running... Check in: " +  hours + "h "
+		    + minutes + "m " + seconds + "s ";
+
+		    // If the count down is over, write some text
+		    if (distance < 0) {
+		        clearInterval(x);
+		        document.getElementById("messageproc").innerHTML = "Model run finished";
+		    }
+		}, 1000);
+
+		// give message if data unavailable
+		var http = new XMLHttpRequest();
+		http.open('HEAD', fn, false);
+		http.send();
+
+		// get id of message/compare divs to display on data loading
+		var msg = document.getElementById('message');
+		var msgprc = document.getElementById('messageproc');
+		if (curDate == reqDate) {
+			if (http.status != 404) {
+				msg.style.display = 'none';
+				msgprc.style.display = 'none';
+			} else {
+				msg.style.display = 'none';
+				msgprc.style.display = 'block';
+			}
+		} else {
+			if (http.status != 404) {
+				msg.style.display = 'none';
+				msgprc.style.display = 'none';
+			} else {
+				msg.style.display = 'block';
+				msgprc.style.display = 'none';
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>i-DDEA | Intelligent Dam Decisions and Assessment</title>
+	<meta name="description" content="Smart Dam Operations" />
+	<meta name="keywords" content="dams, iddea, idea,i-ddea, smart reservoir operations , smart dam operations, hydropower, optimization, weather forecasts based operations, flood control, Shahryar Ahmad, uw, dss, decision support system, iDDEA, i-DDEA, interactive dam, Global Forecast System (GFS)"
+	/>
+	<meta name="author" content="Shahryar Ahmad" />
+	<meta name="google-site-verification" content="kCOI6OozGqM3nhpJ_uqUStYnhn5LEaG7ZmWYVBEO4bs" />
+
+	<link rel="shortcut icon" href="img/favicon.png">
+	<link rel="stylesheet" type="text/css" href="css/normalize.css" />
+	<link rel="stylesheet" type="text/css" href="css/demo.css" />
+	<link rel="stylesheet" type="text/css" href="css/icons.css" />
+	<link rel="stylesheet" type="text/css" href="css/component.css" />
+	<script src="https://use.fontawesome.com/e6fc3c0478.js"></script>
+	<link rel="stylesheet" href="css/leaflet.groupedlayercontrol.css" />
+	<!-- Leaflet -->
+	<link rel="stylesheet" href="css/leaflet.css" />
+	<link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+	<link rel="stylesheet" href="css/leaflet-measure.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script src="js/modernizr.custom.js"></script>
+	<!-- Materialize  -->
+
+	<!-- Compiled and minified CSS -->
+	<link rel="stylesheet" href="css/materialize.min.css">
+
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<!-- Plugin -->
+
+	<!-- Compiled and minified JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+	<style>
+		#map {
+			overflow-y: hidden;
+			overflow-x: hidden;
+			/*float: center;*/
+			width: 80%;
+			height: 80%;
+			padding: 30;
+			margin: 2 auto;
+			position: relative;
+		}
+	</style>
+</head>
+
+<body onload="initialize()">
+
+	<div id="st-container" class="st-container">
+
+		<!-- Forecast Data -->
+		<nav class="st-menu st-effect-2" id="menu-2">
+			<h2><i class="fa fa-tint" aria-hidden="true"></i>&nbsp;&nbsp;Reservoir Inflow</h2>
+			<div id="content-sidebar" class="sideinfo">
+				<div class="input-field">
+					<select name="forecastVar" id="forecastVar" onchange="initForecastChart()">
+					      <option value="" disabled selected>Select Forecast Model</option>
+					      <option value="gfs">VIC-based Forecasts (GFS)</option>
+					      <option value="ann">Data-based (ANN) Forecasts</option>
+					</select>
+				</div>
+				<input type="text" class="datepicker" id="forecastdate" placeholder="Forecast Date" onchange="initForecastChart()">
+				<div style="display:inline;">
+					<a id="datechange" onclick="decreaseForecastDate();" title="Step back a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-backward" aria-hidden="true"></i>
+					</a>
+					<a id="datechange" onclick="increaseForecastDate();" title="Step forward a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-forward" aria-hidden="true"></i>
+					</a>
+
+				</div>
+
+				<div id="ifr_forecast" frameborder=None></div>
+			</div>
+		</nav>
+
+		<!-- Optimized Operations -->
+		<nav class="st-menu st-effect-3" id="menu-3">
+			<h2><i class="fa fa-bar-chart" aria-hidden="true"></i>&nbsp;&nbsp;Optimized Advisory</h2>
+			<div id="content-sidebar" class="sideinfo">
+				<div class="input-field">
+					<select name="optimVar" id="optimVar" onchange="initOptimChart()">
+					      <option value="" disabled selected>Select Variable</option>
+					      <option value="outflow">Release</option>
+					      <option value="elev">Forebay Elevation</option>
+					      <option value="hp">Hydropower Generation</option>
+					</select>
+				</div>
+				<input type="text" class="datepicker" id="optimdate" placeholder="Optimization Date" onchange="initOptimChart()">
+				<div style="display:inline;">
+					<a id="datechange" onclick="decreaseOptimDate();" title="Step back a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-backward" aria-hidden="true"></i>
+					</a>
+					<a id="datechange" onclick="increaseOptimDate();" title="Step forward a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-forward" aria-hidden="true"></i>
+					</a>
+				</div>
+				<div id="ifr_optim" frameborder=None></div>
+			</div>
+
+		</nav>
+
+		<!-- Vis Raster -->
+		<nav class="st-menu st-effect-6" id="menu-6">
+			<h2><i class="fa fa-picture-o" aria-hidden="true"></i>&nbsp;&nbsp;Visualize Gridded Forecasts</h2>
+			<div id="content-sidebar" class="sideinfo">
+				<div class="input-field">
+					<select name="visVar" id="visVar" onchange="initVisRaster()">
+						  <option value="" disabled selected>Select Forecast Variable</option>
+						  <option value="precip">Precipitation</option>
+						  <option value="ts_min">Min Temperature</option>
+						  <option value="ts_max">Max Temperature</option>
+						  <option value="w_ave">Wind Speed</option>
+					</select>
+				</div>
+				<div> |
+					<input type="text" class="datepicker" id="visdate" placeholder="Forecast Date" onchange="initVisRaster()">
+				</div>
+				<div style="display:inline;">
+					<a id="datechange" onclick="decreaseVisDate();" title="Step back a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-backward" aria-hidden="true"></i>
+					</a>
+					<a id="datechange" onclick="increaseVisDate();" title="Step forward a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-forward" aria-hidden="true"></i>
+					</a>
+				</div>
+				<div id="message-err" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 15px;
+			    color: #008f80; font-style: italic;margin:5 auto;display:'block';">For specific grid cell values, click on raster shown on the map</div>
+
+				<!-- <div id="ifr_optim" frameborder=None></div> -->
+			</div>
+
+		</nav>
+
+		<!-- Assess -->
+		<nav class="st-menu st-effect-5" id="menu-5">
+			<h2><i class="fa fa-balance-scale" aria-hidden="true"></i>&nbsp;&nbsp;Assess Benefits</h2>
+			<div id="content-sidebar" class="sideinfo">
+				<div class="input-field">
+					<select name="" id="assessType" onchange="initAssessChart()">
+						  <option value="" disabled selected>Select Option</option>
+					      <option value="week" >Weekly Hydropower Assessment</option>
+						  <option value="weekfc">Weekly Forecast Assessment</option>
+
+					</select>
+				</div>
+				<label for="assessdate">Week ending on: &ensp; </label>
+				<input type="text" class="datepicker" id="assessdate" placeholder="Assessment Date" onchange="initAssessChart()">
+				<div style="display:inline;">
+					<a id="datechange" onclick="decreaseAssessDate();" title="Step back a week" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-backward" aria-hidden="true"></i>
+					</a>
+					<a id="datechange" onclick="increaseAssessDate();" title="Step forward a week" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-forward" aria-hidden="true"></i>
+					</a>
+				</div>
+				&nbsp; &nbsp;
+
+				<div id="fc_elem" style="display:none;">
+					<label for="assessdate_fc">Forecast Date: </label>
+					<input type="text" class="datepicker" id="assessdate_fc" placeholder="Forecast Date" onchange="initAssessChart()">
+					<div style="display:inline;">
+						<a id="datechange" onclick="decreaseAssessDate_fc();" title="Step back a week" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-backward" aria-hidden="true"></i>
+					</a>
+						<a id="datechange" onclick="increaseAssessDate_fc();" title="Step forward a week" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-forward" aria-hidden="true"></i>
+					</a>
+					</div>
+				</div>
+				<div id="ifr_assess" frameborder=None></div>
+				<div style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 12px; color: #40687c;">
+					<p style="line-height: 120%;">Lower Realized Benefits, if any, are due to underestimated forecasted inflow and higher observed turbine runtime hours.</p>
+
+					<p style="line-height: 120%;">Assessment performed for 8 days before selected date, against benefits from observed operations.<br> <b>Realized Benefits</b> calculated by passing observed inflow, updating optimized releases sequentially every 2 days.</p>
+				</div>
+			</div>
+
+		</nav>
+
+		<!-- Actual Operations -->
+		<nav class="st-menu st-effect-1" id="menu-1">
+			<h2><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;&nbsp;Actual Operations</h2>
+			<div id="content-sidebar" class="sideinfo">
+				<div class="input-field">
+					<select name="actualVar" id="actualVar" onchange="initActualChart()">
+					      <option value="" disabled selected>Select Variable</option>
+					      <option value="inflow">Inflow & Release</option>
+					      <option value="elev">Forebay Elevation</option>
+					      <option value="hp">Hydropower Generation</option>
+					</select>
+				</div>
+
+				<div id="ifr_actual" frameborder=None></div>
+			</div>
+
+		</nav>
+		<!-- Download data -->
+		<nav class="st-menu st-effect-4" id="menu-4">
+			<h2><i class="fa fa-download" aria-hidden="true"></i>&nbsp;&nbsp;Download Data</h2>
+			<div id="content-sidebar" class="sideinfo">
+				<div class="input-field">
+					<select name="downloadData" id="downloadData" onchange="initDownload()">
+					      <option value="" disabled selected>Select Variable</option>
+						  <optgroup label="Observed Data">
+							      <option value="flowA">Inflow & Release</option>
+								  <option value="elevA">Forebay Elevation</option>
+								  <option value="hpA">Hydropower</option>
+						   </optgroup>
+						   <optgroup label="Modeled Data">
+							  	<option value="inflowF">Forecast + Hindcast Inflow (VIC based)</option>
+								<option value="inflowH">Forecast Inflow (VIC based)</option>
+								<option value="inflowANN">Forecast Inflow (ANN based)</option>
+						   </optgroup>
+						   <optgroup label="Optimized Data (VIC based)">
+							   <option value="releaseO">Release</option>
+							  <option value="elevO">Forebay Elevation</option>
+							  <option value="hpO">Hydropower</option>
+						  </optgroup>
+							 <optgroup label="Optimized Data (ANN based)">
+							  <option value="releaseANN">Release</option>
+							 <option value="elevANN">Forebay Elevation</option>
+							 <option value="hpANN">Hydropower</option>
+						   </optgroup>
+					</select>
+				</div>
+				<input type="text" class="datepicker" id="downloaddate" placeholder="Download Date" onchange="initDownload()">
+				<div id="quickdate" style="display:inline;">
+					<a id="datechange" onclick="decreaseDownloadDate();" title="Step back a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-backward" aria-hidden="true"></i>
+					</a>
+					<a id="datechange" onclick="increaseDownloadDate();" title="Step forward a day" class="waves-effect waves-teal btn-flat">
+						<i class="fa fa-step-forward" aria-hidden="true"></i>
+					</a>
+
+				</div>
+				<a id="linkd" href="" download> &nbsp;&nbsp;&nbsp;Download </a>
+				<div id="ifr_download" frameborder=None></div>
+				<div style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 12px; color: #40687c;">
+					<p style="line-height: 120%;"><b>Units</b>: Inflow/Release - cfs, Hydropower - MWh, Elevation - feet</p>
+				</div>
+			</div>
+
+		</nav>
+
+		<!--
+		Top Navigation
+-->
+		<div class="st-pusher">
+
+			<div class="st-content">
+				<div id="topbar">
+				</div>
+				<header class="codrops-header">
+					<ul id="topnav">
+						<li><a class="active" href="#home">Home</a></li>
+
+						<li><a class="waves-effect waves-light btn modal-trigger" href="#modeldetails">Model details</a></li>
+						<li><a class="waves-effect waves-light btn modal-trigger" href="#damdetails">Dam Details</a></li>
+						<li><a class="waves-effect waves-light btn modal-trigger" href="#disclaimer">Terms of Usage</a></li>
+						<li><a class="waves-effect waves-light btn " href="http://students.washington.edu/skahmad/GRanD_map/">Global Dams Visualizer</a></li>
+						<li><a class="waves-effect waves-light btn " href="http://saswe.net">SASWE Home</a></li>
+						<li><a class="waves-effect waves-light btn " href="https://students.washington.edu/skahmad/#three">Contact</a></li>
+					</ul>
+
+
+					<!-- Modal Structure -->
+					<div id="damdetails" class="modal modal-fixed-footer">
+						<div class="modal-content">
+							<h4>Dam Details</h4>
+							<div id="topbar" style="height: 200px; vertical-align:middle; text-align:center">
+								<img src="img/detroitdam.png" width="60%" style="float:left">
+								<br><img src="img/detroitdem.png" width="60%" style="margin-top:20px; float:left">
+								<br><img src="img/detroittable.png" width="60%" style="margin-top:20px; float:left">
+							</div>
+						</div>
+						<div class="modal-footer">
+							<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+						</div>
+					</div>
+					<div id="modeldetails" class="modal modal-fixed-footer">
+						<div class="modal-content">
+							<h4>Model Details</h4>
+							<div id="topbar" style="height: 200px;">
+								<img src="img/model.png" width="70%" style="float:left">
+
+							</div>
+
+						</div>
+						<div class="modal-footer">
+							<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+						</div>
+
+					</div>
+
+					<div id="disclaimer" class="modal modal-fixed-footer">
+						<div class="modal-content">
+							<h4>Terms of Usage</h4>
+							<div id="topbar" style="height: 100px; color: black;">
+								<p>
+									The i-DDEA Decision Support System is a research grade platform that is continuously under development. Users should use the outputs at their own risk as developers of the system do not accept any responsibility for erroneous data or outputs that may
+									trigger improper decision making.
+								</p>
+							</div>
+
+						</div>
+						<div class="modal-footer">
+							<a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+						</div>
+
+					</div>
+
+
+					<!--  -->
+
+					<img src="img/logo1.png" alt="logo" />
+					<h1><b><i>i-</i>DDEA</b>:&nbsp; <b>I</b>ntelligent <b>D</b>am <b>De</b>cisions and <b>A</b>ssessment <span>A Support System for Smarter Dam Operations</span></h1>
+				</header>
+
+				<div id="st-trigger-effects">
+
+					<!-- Dropdown Trigger -->
+					<!-- <a class='dropdown-button btn' href='#' data-activates='dropdown1'>detroit dam</a> -->
+
+					<!-- Dropdown Structure -->
+					<!-- <ul id='dropdown1' class='dropdown-content'>
+						<li><a href="#!">Pensacola Dam</a></li>
+					</ul> -->
+
+					<input class="with-gap" name="group3" type="radio" id="test5" checked />
+					<label for="test5">DETROIT DAM [OREGON] &nbsp;&nbsp;</label>
+					<br><br>
+					<button class="btn waves-effect waves-light" data-effect="st-effect-2"><i class="fa fa-tint" aria-hidden="true"></i>&nbsp;Reservoir Inflow</button>
+					<button class="btn waves-effect waves-light" data-effect="st-effect-6"><i class="fa fa-picture-o" aria-hidden="true"></i>&nbsp;Visualize</button>
+					<button class="btn waves-effect waves-light" data-effect="st-effect-3"><i class="fa fa-bar-chart" aria-hidden="true"></i>&nbsp;Optimized Advisory</button>
+					<button class="btn waves-effect waves-light" data-effect="st-effect-5"><i class="fa fa-balance-scale" aria-hidden="true"></i>&nbsp;Assess Benefits</button>
+					<button class="btn waves-effect waves-light" data-effect="st-effect-1"><i class="fa fa-globe" aria-hidden="true"></i>&nbsp;Actual Operations</button>
+					<button class="btn waves-effect waves-light" data-effect="st-effect-4"><i class="fa fa-download" aria-hidden="true"></i>&nbsp;Download Data</button>
+
+
+				</div>
+				<!-- <br> -->
+				<div class="infomap" id="map" height=90%></div>
+				<div class="infofoot">
+					<p>Copyright (C) | <a href="http://saswe.net/">SASWE Research Group</a> | 2018</p>
+					<p>A concept by <a href="https://students.washington.edu/skahmad/">Shahryar K Ahmad</a></p>
+
+				</div>
+				<a href="https://info.flagcounter.com/fxrf"><img src="https://s01.flagcounter.com/count/fxrf/bg_5E5E5E/txt_FFFFFF/border_CCCCCC/columns_2/maxflags_10/viewers_0/labels_0/pageviews_0/flags_0/percent_0/" alt="Flag Counter" border="0" style="float:right;"></a>
+			</div>
+			<!-- /st-content -->
+		</div>
+		<!-- /st-pusher -->
+	</div>
+	<!-- /st-container -->
+	<script src="js/classie.js"></script>
+	<script src="js/sidebarEffects.js"></script>
+	<script src="//d3js.org/d3.v4.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/chroma-js/1.3.0/chroma.min.js"></script>
+	<script src="js/leaflet.js"></script>
+	<script src="js/leaflet-hash.js"></script>
+	<script src="js/Autolinker.min.js"></script>
+	<script src="js/leaflet-measure.js"></script>
+	<script src="data/DrainageBasin0.js"></script>
+	<script src="data/DetroitLake1.js"></script>
+	<script src="data/DetroitDam2.js"></script>
+	<script src="//npmcdn.com/geotiff@0.3.6/dist/geotiff.js"></script>
+	<script src="js/leaflet.canvaslayer.field.js"></script>
+	<script src="js/leaflet.groupedlayercontrol.js"></script>
+	<script src="js/dssreservoir.js"></script>
+	<script>
+		let layerL1 = L.canvasLayer.scalarField({}, {})
+		let layerL4 = L.canvasLayer.scalarField({}, {})
+		let layerL7 = L.canvasLayer.scalarField({}, {})
+		let layerL10 = L.canvasLayer.scalarField({}, {})
+		let layerL15 = L.canvasLayer.scalarField({}, {})
+		// let layerGeo = L.canvasLayer.scalarField({}, {})
+		let legendVis = L.control({
+			position: 'bottomleft'
+		});
+	</script>
+</body>
+
+</html>

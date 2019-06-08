@@ -1,0 +1,26 @@
+
+#map {
+    background-color: #ffffff
+}
+th {
+    text-align: left;
+    vertical-align: top;
+}
+.info {
+
+}
+
+.leaflet-container {
+    background: #fff;
+}
+.leaflet-popup-content {
+    width:auto !important;
+}
+.leaflet-tooltip {
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+.leaflet-tooltip-left:before, .leaflet-tooltip-right:before {
+    border: 0px;
+}

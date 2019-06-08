@@ -1,0 +1,220 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Detroit Dam</title>
+
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<style type="text/css">
+		$ {
+			demo.css
+		}
+	</style>
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/modules/data.js"></script>
+	<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+	<script>
+		function getParamValue(paramName) {
+			var url = window.location.search.substring(1); //get rid of "?" in querystring
+			var qArray = url.split('&'); //get key-value pairs
+			for (var i = 0; i < qArray.length; i++) {
+				var pArr = qArray[i].split('='); //split key and value
+				if (pArr[0] == paramName)
+					return pArr[1]; //return value
+			}
+		}
+
+		function readfile(datafile) {
+			dataset = '';
+			// AJAX in the data file
+			$.ajax({
+				type: "GET",
+				url: datafile,
+				async: false,
+				dataType: "text",
+				success: function(data) {
+					dataset = String(data);
+				}
+			});
+			return dataset;
+		}
+	</script>
+
+
+</head>
+
+<body style="overflow-x:hidden;">
+	<!-- <div align = "left"><a href="../data/det_elev.txt" target="_blank" style="color: #1E88E5;">Download Streamflow Data</a></div> -->
+
+	<!-- <div id="message-err" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 15px;
+    color: red; margin:5 auto;display:'block';">Sorry, data unavailable.</div> -->
+	<div id="message-err-fc" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 10px;
+    color: red; margin:5 auto;display:'block';">Forecast data unavailable</div>
+	<div id="message-err-obs" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 10px;
+    color: red; margin:5 auto;display:'block';">Observed data unavailable</div>
+
+	<!-- <div id="messageproc" style="font-family: 'Lato', Calibri, Arial, sans-serif; font-size: 15px; color: #14ca57; margin:5 auto;display:'none';">Forecast Model is running... </div> -->
+
+	<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+	<script type="text/javascript">
+		var reqDate = getParamValue("date");
+		var reqDate_fc = getParamValue("date_fc");
+		console.log();
+		obs = []
+		fcst = []
+		fcstANN = []
+		// fn = 'http://128.95.45.89/testdss/optim_data/forecast_inflow_'+reqDate+'.txt'
+		fn1 = readfile('../data/optim_data/obs_inflow_'+reqDate+'.txt')
+		lines1 = fn1.split('\n');
+		for (i = 0; i < lines1.length; i++) {
+			var items = lines1[i].split(',');
+			obs.push([new Date(items[0]).getTime(), +items[1]]);
+		}
+
+		fn2 = readfile('../data/optim_data/forecast_inflow_'+reqDate_fc+'.txt') // + reqDate + '.txt'
+		lines2 = fn2.split('\n');
+		for (i = 0; i < lines2.length; i++) {
+			var items = lines2[i].split(',');
+			fcst.push([new Date(items[0]).getTime(), +items[1]]);
+		}
+
+		fn3 = readfile('../data/ann_data/forecast_inflow_'+reqDate_fc+'.txt') // + reqDate + '.txt'
+		lines3 = fn3.split('\n');
+		for (i = 0; i < lines3.length; i++) {
+			var items = lines3[i].split(',');
+			fcstANN.push([new Date(items[0]).getTime(), +items[1]]);
+		}
+
+		Highcharts.chart('container', {
+
+			chart: {
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift'
+
+			},
+			title: {
+
+				text: 'Forecast Comparison',
+				style: {
+					fontWeight: 'bold'
+				}
+			},
+			subtitle:{
+				text: 'ANN-based forecasts are for 7-days lead only'
+			},
+			xAxis: {
+				type: 'datetime',
+				labels: {
+					style: {
+						fontSize: '12px'
+					}
+				},
+				dateTimeLabelFormats: {
+					second: '%Y-%m-%d<br/>%H:%M:%S',
+					minute: '%Y-%m-%d<br/>%H:%M',
+					hour: '%Y-%m-%d<br/>%H:%M',
+					day: '%Y<br/>%m-%d',
+					week: '%Y<br/>%m-%d',
+					month: '%Y-%m',
+					year: '%Y'
+				}
+			},
+
+			yAxis: {
+				labels: {
+					formatter: function() {
+						return Highcharts.numberFormat(this.value, 0);
+					},
+					style: {
+						fontSize: '12px'
+					}
+				},
+				title: {
+					text: 'Inflow (cfs)',
+					style: {
+						// fontWeight: 'bold',
+						fontSize: '15px'
+					}
+				}
+			},
+			legend: {
+				enabled: true
+			},
+			series: [{
+				name: 'Observed',
+				data: obs,
+				color: 'black',
+				tooltip: {
+					valueSuffix: ''
+				},
+				type: 'spline',
+				pointPadding: 0.3,
+				pointPlacement: 0.2,
+			}, {
+				name: 'VIC-based Forecast',
+				color: 'blue',
+				data: fcst,
+				type: 'spline',
+				linewidth: 1,
+				tooltip: {
+					valueSuffix: ' '
+				},
+			}, {
+				name: 'ANN-based Forecast',
+				color: 'green',
+				data: fcstANN,
+				type: 'spline',
+				linewidth: 1,
+				tooltip: {
+					valueSuffix: ' '
+				},
+			}]
+
+		});
+	</script>
+
+
+	<script type="text/javascript">
+		var reqDate = getParamValue("date");
+		var reqDate_fc = getParamValue("date_fc");
+		// fn = 'http://128.95.45.89/testdss/optim_data/elev_optim_'+reqDate+'.txt'
+		fn1 = '../data/optim_data/obs_inflow_' + reqDate + '.txt'
+		fn2 = '../data/optim_data/forecast_inflow_'+reqDate_fc+'.txt' // + reqDate + '.txt'
+		fn3 = '../data/ann_data/forecast_inflow_'+reqDate_fc+'.txt' // + reqDate + '.txt'
+
+		// // give message if data unavailable
+		var http = new XMLHttpRequest();
+		http.open('HEAD', fn1, false);
+		http.send();
+
+		// get id of message/compare divs to display on data loading
+		var msg = document.getElementById('message');
+		var msgerr = document.getElementById('message-err-obs');
+
+		if (http.status != 404) {
+			msgerr.style.display = 'none';
+		} else {
+			msgerr.style.display = 'block';
+		}
+
+		var http = new XMLHttpRequest();
+		http.open('HEAD', fn2, false);
+		http.send();
+
+		// get id of message/compare divs to display on data loading
+		var msg = document.getElementById('message');
+		var msgerr = document.getElementById('message-err-fc');
+
+		if (http.status != 404) {
+			msgerr.style.display = 'none';
+		} else {
+			msgerr.style.display = 'block';
+		}
+	</script>
+
+</body>
+
+</html>
