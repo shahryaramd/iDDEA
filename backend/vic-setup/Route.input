@@ -1,0 +1,29 @@
+# INPUT FILE FOR THE OHIO BASIN.   
+# NAME OF FLOW DIRECTION FILE
+./Parameters/FlowDirection.txt
+# NAME OF VELOCITY FILE
+.false.   
+1.5   
+# NAME OF DIFF FILE   
+.false.   
+800   
+# NAME OF XMASK FILE   
+.false.   
+2500
+# NAME OF FRACTION FILE   
+.false.   
+1
+# NAME OF STATION FILE   
+./Parameters/Route.locations_det
+# PATH OF INPUT FILES AND PRECISION
+./VIC_Results/fluxes_
+2 
+# PATH OF OUTPUT FILES   
+./Route_Results/
+# START AND END YEAR, MONTH AND DAY OF VIC OUTPUT
+2016 06 07
+2019 06 23
+# NAME OF UNIT HYDROGRAPH FILE   
+./Parameters/Route1_det.uh   
+
+
