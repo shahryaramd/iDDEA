@@ -44,7 +44,7 @@ The model scripts are available under *iDDEA/backend/reservoir-operations/*
 ### Benefits Assessment
 Assessment of the optimized release decisions is performed against the observed operations without any optimization, on every day of the model run retrospectively over the past week. The optimized hydropower benefits are obtained using the optimized releases while passing the observed inflow into the system. These optimized releases are obtained from the MPC approach where the optimization is performed at every alternate step with the updated forecasts. The observed hydropower benefits, however, are computed from observed operations without any optimization/forecasts.
 
-The scripts for continuous assessment of the optimal strategy obtained from VIC and ANN-based forecasts are available under  *iDDEA/backend/reservoir-operations/* (AssessBenefits.py and AssessBenefits_ANN.py).
+The scripts for continuous assessment of the optimal strategy obtained from VIC and ANN-based forecasts are available under  *iDDEA/backend/reservoir-operations/* (*AssessBenefits.py* and *AssessBenefits_ANN.py*).
 
 ## 2. Frontend Architecture
 
@@ -52,3 +52,5 @@ The other primary component that serves as the link between the complex models r
 
 The scripts and tools for the frontend are all available in the *iDDEA/frontend* folder. For customization, the user specifically needs to modify the *iDDEA/frontend/index.html, iDDEA/frontend/js/dssreservoir.js, iDDEA/frontend/css/demo.css*  and html files under *iDDEA/frontend/charts/* for the individual charts of timeseries visualization. The scripts are coded in a user friendly way such that any user with some experience in web-programming is able to understand and modify them for any other dam of ineterest or for implementing any new feature in the system.
 
+## Contact
+For any issues with the iDDEA DSS, suggestions, comments or feedback, please contact at skahmad@uw.edu
